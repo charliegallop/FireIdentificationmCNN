@@ -274,6 +274,17 @@ plt.title('Training and Validation Loss')
 plt.xlabel('epoch')
 plt.show()
 
+#%%
+test_ds = tf.keras.preprocessing.image_dataset_from_directory(
+    test_dir,
+    shuffle = True,
+    seed = 123,
+    image_size = (img_height, img_width),
+    batch_size = batch_size
+    )
+
+
+test_ds = test_ds.prefetch(buffer_size = AUTOTUNE)
 
 #%% Verifying on test set
 
@@ -303,9 +314,6 @@ for i in range(9):
   plt.title(class_names[predictions[i]])
   plt.axis("off")
 
-#%%
-
-y_pred = model.predict_classes(test_ds)
 
 #%%
 import pandas as pd
@@ -314,7 +322,7 @@ con_mat_norm = np.around(con_mat.astype('float')/con_mat.sum(axis = 1)[:, np.new
 
 con_mat_df = pd.DataFrame(con_mat_norm,
                           index = class_names,
-                          columns = class_names)
+                          columntest_dss = class_names)
 
 #%%
 import seaborn as sns
@@ -324,6 +332,41 @@ plt.tight_layout()
 plt.ylabel('True label')
 plt.xlabel('Predicted label')
 plt.show()
+
+
+
+
+
+
+
+
+#%% Almost worked but didn't - Too many labels
+testData = tf.keras.preprocessing.image_dataset_from_directory(
+    test_dir,
+    shuffle = True,
+    seed=123,
+    image_size=(img_height,img_width),
+    batch_size=1)
+
+#%%
+predictions = np.array([])
+test_labels =  np.array([])
+for x, y in testData:
+  test_labels = np.concatenate([labels, np.argmax(y.numpy(), axis=-1)])
+
+#%%
+
+predictions_all = model.predict(testData).flatten()
+predictions_all = tf.nn.sigmoid(predictions_all)
+predictions_all = tf.where(predictions_all < 0.5, 0, 1)
+
+
+
+
+
+
+
+
 
 #%% ROC Curve
 
@@ -340,9 +383,91 @@ def plot_roc_curve(fpr,tpr):
   
 plot_roc_curve (fpr,tpr) 
 
+
+
+
+
+
+
+#%% WORKS FOR TESTING ON THE WHOLE TEST SET
+
+import random
+import cv2
+
+IMG_SIZE = 160
+
+
+CATEGORIES = ['fire', 'nofire']
+
+for category in CATEGORIES :
+    path = os.path.join(test_dir, category)
+    for img in os.listdir(path):
+        img_array = cv2.imread(os.path.join(path, img), cv2.IMREAD_UNCHANGED)
+
+testing_data = []
+
+def create_testing_data():
+    for category in CATEGORIES :
+        path = os.path.join(test_dir, category)
+        class_num = CATEGORIES.index(category)
+        for img in os.listdir(path):
+            try :
+                img_array = cv2.imread(os.path.join(path, img), cv2.IMREAD_UNCHANGED)
+                new_array = cv2.resize(img_array, (IMG_SIZE, IMG_SIZE))
+                testing_data.append([new_array, class_num])
+            except Exception as e:
+                pass
+
+create_testing_data()
+
+random.shuffle(testing_data)
+
+X = [] #features
+y = [] #labels
+for features, label in testing_data:
+    X.append(features)
+    y.append(label)
+
+X = np.array(X).reshape(-1, IMG_SIZE, IMG_SIZE, 3)
+y = np.asarray(y)
+
+#%%
+y_pred = model.predict(X)
+
+y_pred = tf.nn.sigmoid(y_pred)
+y_pred = tf.where(y_pred < 0.5, 0, 1)
+
 #%%
 
+print('Predictions:\n', y_pred.numpy().flatten())
+print('Labels:\n', y)
 
-test_gen= ImageDataGenerator(rescale = 1./2550)
-test_set = test_gen.flow_from_directory("charlies_folder_where the test shit is", target_size=(250,250, class_mode='binary'))
+#%%
+plt.figure(figsize=(10, 10))
+for i in range(9):
+  ax = plt.subplot(3, 3, i + 1)
+  plt.imshow(image_batch[i].astype("uint8"))
+  plt.title(class_names[y_pred[i]])
+  plt.axis("off")
 
+#%%
+import pandas as pd
+con_mat = tf.math.confusion_matrix(labels = y, predictions=y_pred).numpy()
+con_mat_norm = np.around(con_mat.astype('float')/con_mat.sum(axis = 1)[:, np.newaxis], decimals = 2)
+
+con_mat_df = pd.DataFrame(con_mat_norm,
+                          index = class_names,
+                          columns = class_names)
+
+#%%
+import seaborn as sns
+figure = plt.figure(figsize = (8, 8))
+sns.heatmap(con_mat_df, annot = True, cmap = plt.cm.Blues)
+plt.tight_layout()
+plt.ylabel('True label')
+plt.xlabel('Predicted label')
+plt.show()
+
+#%%
+loss, accuracy = model.evaluate(testData)
+print('Test accuracy :', accuracy)
