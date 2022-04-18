@@ -9,7 +9,7 @@ Meg:
 
 Charlie
 - [ ] Test the TL models on another dataset
-- [ ] Identify what images teh models are missclassifying (sunsets?)
+- [ ] Identify what images the models are missclassifying (sunsets?)
 - [X] Look at recall, precision, AUC metrics instead of/as well as accuracy
 - [X] Implement and compare different trasnfer learning models
 - [X] Look into which ones would be 'light-weight' for remote sensing devices
