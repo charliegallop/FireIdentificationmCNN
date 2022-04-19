@@ -8,8 +8,8 @@ Meg:
 - [X] See if you can bias the output towards being risk adverse
 
 Charlie
-- [ ] Test the TL models on another dataset
 - [ ] Identify what images the models are missclassifying (sunsets?)
+- [X] Test the TL models on another dataset
 - [X] Look at recall, precision, AUC metrics instead of/as well as accuracy
 - [X] Implement and compare different trasnfer learning models
 - [X] Look into which ones would be 'light-weight' for remote sensing devices
