@@ -9,6 +9,7 @@ from tensorflow.keras.preprocessing import image
 import pathlib
 import cv2
 import imghdr
+from sklearn.metrics import classification_report
 
 
 def TestImages(img_directory, input_shape, model= None):
@@ -78,14 +79,13 @@ def DeleteIncompatibleImages(bad_file_list):
             os.remove(i)
         else:
             print("The file does not exist")
-
-def ConfusionMatrix(model = None, dataSet = None):
-    
+            
+def GetLabels(model, dataset):
     # Get predictions using dataset and store them in np arrays
     predictions = np.array([]).reshape(0,1)
     labels = np.array([]).reshape(0,1)
     
-    for x, y in dataSet:
+    for x, y in dataset:
         predictions = np.concatenate([predictions, model.predict(x)])
         labels = np.concatenate([labels, y.numpy()])
     
@@ -93,9 +93,14 @@ def ConfusionMatrix(model = None, dataSet = None):
     predictions_conf = [1 if x >= 0.5 else 0 for x in predictions.flatten().tolist()]
     labels_conf = labels.flatten().tolist()
     
-    # Make confusion matrix
+    return predictions_conf, labels_conf
+
+def ConfusionMatrix(model = None, dataset = None):
     
-    class_names = dataSet.class_names
+    labels_conf, predictions_conf = GetLabels(model, dataset)
+    
+    # Make confusion matrix
+    class_names = dataset.class_names
     con_mat = tf.math.confusion_matrix(labels = labels_conf, predictions=predictions_conf).numpy()
     #con_mat_df = pd.DataFrame(con_mat_norm,
     con_mat_df = pd.DataFrame(con_mat,
@@ -109,4 +114,33 @@ def ConfusionMatrix(model = None, dataSet = None):
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.show()
+    
+    return con_mat_df
+
+def CalculateAccuracy(confusion_matrix):
+    tn = confusion_matrix.iloc[0,0]
+    fp = confusion_matrix.iloc[0,1]
+    fn = confusion_matrix.iloc[1,0]
+    tp = confusion_matrix.iloc[1,1]
+
+
+    return (tp + tn)/(tp + fp + tn + fn)
+
+def CalculateF1Score(precision, recall):
+    return 2 * ((precision * recall)/(precision + recall))
+
+def CreateMetricsReport(model = None, dataset = None, confusion_matrix = None):   
+    dp = 5
+    # Creates report for precision, recall, f1-score from sklearn
+    loss, precision, recall, auc = model.evaluate(dataset)
+    labels_conf, predictions_conf = GetLabels(model, dataset)
+    class_report = classification_report(labels_conf, predictions_conf, digits = dp)
+    print(class_report)
+    print('Test loss :', round(loss, dp))
+    print('Test auc :',round(auc, dp))
+    print('Test accuracy: ', round(CalculateAccuracy(confusion_matrix), dp))
+#     print('Test precision :', precision)
+#     print('Test recall :', recall)
+#     print('Test F1 Score: ', CalculateF1Score(precision, recall))
+ 
     
