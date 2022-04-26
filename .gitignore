@@ -1,3 +1,7 @@
 data
 code/Notebooks/models/model00_EfficientNetB4.h5
 code/Notebooks/models/IA_model00_EfficientNetB4.h5
+plots
+images
+code/Notebooks/TEST_MobileNetv3_Large_BASE.h5
+code/Notebooks/TEST_MobileNetv3_Small_BASE.h5

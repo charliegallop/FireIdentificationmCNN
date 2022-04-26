@@ -84,18 +84,23 @@ def GetLabels(model, dataset):
     # Get predictions using dataset and store them in np arrays
     predictions = np.array([]).reshape(0,1)
     labels = np.array([]).reshape(0,1)
-    
-    for x, y in dataset:
-        predictions = np.concatenate([predictions, model.predict(x)])
-        labels = np.concatenate([labels, y.numpy()])
-    
+
+    if model:
+        for x, y in dataset:
+            predictions = np.concatenate([predictions, model.predict(x)])
+            labels = np.concatenate([labels, y.numpy()])
+        predictions_conf = [1 if x >= 0.5 else 0 for x in predictions.flatten().tolist()]
+    else:
+        for x, y in dataset:
+            labels = np.concatenate([labels, y.numpy()])
+        predictions_conf = []
+        
     # prepare predictions and labels for Confusion Matrix
-    predictions_conf = [1 if x >= 0.5 else 0 for x in predictions.flatten().tolist()]
     labels_conf = labels.flatten().tolist()
     
     return predictions_conf, labels_conf
 
-def ConfusionMatrix(model = None, dataset = None):
+def ConfusionMatrix(model = None, dataset = None, save_fig = False, save_fig_location = None):
     
     labels_conf, predictions_conf = GetLabels(model, dataset)
     
@@ -115,7 +120,11 @@ def ConfusionMatrix(model = None, dataset = None):
     plt.xlabel('Predicted label')
     plt.show()
     
-    return con_mat_df
+    if save_fig and save_fig_location:
+        figure.savefig(save_fig_location, dpi = 300)
+        print(f"figure has been saved to: {save_fig_location}")       
+    
+    return con_mat_df, figure
 
 def CalculateAccuracy(confusion_matrix):
     tn = confusion_matrix.iloc[0,0]
