@@ -107,6 +107,8 @@ def ConfusionMatrix(model = None, dataset = None, save_fig = False, save_fig_loc
     # Make confusion matrix
     class_names = dataset.class_names
     con_mat = tf.math.confusion_matrix(labels = labels_conf, predictions=predictions_conf).numpy()
+    print(con_mat)
+    print(type(con_mat))
     #con_mat_df = pd.DataFrame(con_mat_norm,
     con_mat_df = pd.DataFrame(con_mat,
                               index = class_names,

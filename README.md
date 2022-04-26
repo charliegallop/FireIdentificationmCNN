@@ -1,5 +1,11 @@
 # FireIdentificationmCNN
 
+## Links to data:
+
+ - Dataset 1: https://data.mendeley.com/datasets/gjmr63rz2r/1
+ - Dataset 2: https://drive.google.com/drive/folders/1HznoBFEd6yjaLFlSmkUGARwCUzzG4whq?usp=sharing
+ 
+ 
 # ToDo:
 
 Meg:
