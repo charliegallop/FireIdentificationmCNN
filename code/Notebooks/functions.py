@@ -107,15 +107,17 @@ def ConfusionMatrix(model = None, dataset = None, save_fig = False, save_fig_loc
     # Make confusion matrix
     class_names = dataset.class_names
     con_mat = tf.math.confusion_matrix(labels = labels_conf, predictions=predictions_conf).numpy()
+    con_mat_norm = np.around(con_mat.astype('float')/con_mat.sum(axis = 1)[:, np.newaxis], decimals = 2)
     print(con_mat)
     print(type(con_mat))
     #con_mat_df = pd.DataFrame(con_mat_norm,
-    con_mat_df = pd.DataFrame(con_mat,
+    con_mat_df = pd.DataFrame(con_mat_norm,
                               index = class_names,
                               columns = class_names)
     
     # plot on seaborn
     figure = plt.figure(figsize = (8, 8))
+    sns.set(font_scale=2.0)
     sns.heatmap(con_mat_df, annot = True, cmap = plt.cm.Reds, fmt='g')
     plt.tight_layout()
     plt.ylabel('True label')
@@ -123,7 +125,7 @@ def ConfusionMatrix(model = None, dataset = None, save_fig = False, save_fig_loc
     plt.show()
     
     if save_fig and save_fig_location:
-        figure.savefig(save_fig_location, dpi = 300)
+        figure.savefig(save_fig_location, dpi = 300, transparent = True)
         print(f"figure has been saved to: {save_fig_location}")       
     
     return con_mat_df, figure
